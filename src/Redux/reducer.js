@@ -1,23 +1,42 @@
-const AuthReducer = (state = {}, action) => {
-  switch (action.type) {
-    case 'LOGIN':
+ import * as types from './actionTypes';
+ import { getLocalData, saveLocalData } from '../Backend/localStorage';
+ 
+ const initialState = {
+  isAuth: getLocalData("token") ? true : false,
+  token: getLocalData("token") || "",
+  isLoading: false,
+  isError: false,
+};
+ 
+ export const authReducer = (state = {}, action) => {
+ const { type, payload } = action;
+  switch (type) {
+    case types.REGISTER_REQUEST:
+      return { ...state, isLoading: true };
+    case types.REGISTER_SUCCESS:
+      return { ...state, isLoading: false };
+    case types.REGISTER_FAILURE:
+      return { ...state, isLoading: false, isError: true };
+
+    case types.LOGIN_REQUEST:
+      return { ...state, isLoading: true };
+    case types.LOGIN_SUCCESS:
+      saveLocalData("token", payload);
+      return { ...state, isLoading: false, isAuth: true, token: payload };
+    case types.LOGIN_FAILURE:
       return {
         ...state,
-        isAuthenticated: true,
-        user: action.payload,
-      };
-    case 'LOGOUT':
-      return {
-        ...state,
-        isAuthenticated: false,
-        user: null,
+        isLoading: false,
+        isError: true,
+        isAuth: false,
+        token: "",
       };
     default:
       return state;
   }
 }
 
-const UserReducer = (state = { users: [] }, action) => {
+export const userReducer = (state = { users: [] }, action) => {
   switch (action.type) {
     case 'FETCH_USERS':
       return {
@@ -46,7 +65,7 @@ const UserReducer = (state = { users: [] }, action) => {
   }
 };
 
-const feedbackReducer = (state = { feedbacks: [] }, action) => {
+export const feedbackReducer = (state = { feedbacks: [] }, action) => {
   switch (action.type) {
     case 'GET_FEEDBACKS':
       return {
